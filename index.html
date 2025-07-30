@@ -67,7 +67,7 @@
             padding: 15px;
             border: 2px solid #e2e8f0;
             border-radius: 10px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-family: inherit;
             resize: vertical;
             transition: border-color 0.3s ease;
@@ -307,7 +307,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Mini Idea Grader</h1>
+            <h1>💡 Mini Idea Grader</h1>
             <p>Get your Shop App Mini idea evaluated against the official criteria</p>
         </div>
         
@@ -317,7 +317,8 @@
                 <textarea 
                     id="ideaText" 
                     class="idea-input" 
-                    placeholder="Use this template to describe your Mini idea:
+                    maxlength="1000"
+                >Use this template to describe your Mini idea:
 
 📱 Mini Concept: [Brief description of your Mini idea]
 
@@ -329,9 +330,7 @@
 
 👤 Personalization: How do you use user preferences, purchase history, or identity data to customize the experience?
 
-🌟 Example: 'StyleMatch - An AI-powered outfit recommender that analyzes user photos, learns from their purchase history, suggests daily looks from Shop's catalog, and creates social challenges where friends vote on outfits to build engagement habits.'"
-                    maxlength="1000"
-                ></textarea>
+🌟 Example: 'StyleMatch - An AI-powered outfit recommender that analyzes user photos, learns from their purchase history, suggests daily looks from Shop's catalog, and creates social challenges where friends vote on outfits to build engagement habits.'</textarea>
                 <div style="text-align: right; color: #718096; font-size: 0.9rem; margin-top: 5px;">
                     <span id="charCount">0</span>/1000 characters
                 </div>
@@ -398,6 +397,10 @@
                 charCount.style.color = '#718096';
             }
         });
+
+        // Initialize character count on page load
+        const initialCount = ideaInput.value.length;
+        charCount.textContent = initialCount;
 
         // Criteria definitions and keywords
         const criteria = [
