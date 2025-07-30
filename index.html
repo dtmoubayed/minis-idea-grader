@@ -192,6 +192,66 @@
             line-height: 1.5;
         }
 
+        .suggestions-section {
+            margin-top: 30px;
+        }
+
+        .suggestions-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .suggestion {
+            background: #f0f8ff;
+            border-left: 4px solid #4299e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-icon {
+            font-size: 1.2rem;
+            color: #4299e1;
+            margin-right: 10px;
+        }
+
+        .suggestion-content h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+        }
+
+        .suggestion-content p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-examples {
+            background: #e6f3ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .suggestion-examples strong {
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-examples ul {
+            margin: 8px 0 0 20px;
+            color: #4a5568;
+        }
+
+        .suggestion-examples li {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
         .examples {
             margin-top: 40px;
             padding: 30px;
@@ -269,7 +329,7 @@
 
 👤 Personalization: How do you use user preferences, purchase history, or identity data to customize the experience?
 
-🌟 Example: StyleMatch - An AI-powered outfit recommender that analyzes user photos, learns from their purchase history, suggests daily looks from Shops catalog, and creates social challenges where friends vote on outfits to build engagement habits."
+🌟 Example: 'StyleMatch - An AI-powered outfit recommender that analyzes user photos, learns from their purchase history, suggests daily looks from Shop's catalog, and creates social challenges where friends vote on outfits to build engagement habits.'"
                     maxlength="1000"
                 ></textarea>
                 <div style="text-align: right; color: #718096; font-size: 0.9rem; margin-top: 5px;">
@@ -288,6 +348,11 @@
                 <div class="criteria-section">
                     <h3>📋 Criteria Analysis</h3>
                     <div id="criteriaResults"></div>
+                </div>
+                
+                <div class="suggestions-section" id="suggestionsSection" style="display: none;">
+                    <h3>💡 Suggestions to Improve Your Mini</h3>
+                    <div id="suggestionsResults"></div>
                 </div>
             </div>
             
@@ -319,6 +384,8 @@
         const gradeLetter = document.getElementById('gradeLetter');
         const gradeDescription = document.getElementById('gradeDescription');
         const criteriaResults = document.getElementById('criteriaResults');
+        const suggestionsSection = document.getElementById('suggestionsSection');
+        const suggestionsResults = document.getElementById('suggestionsResults');
 
         // Character counter
         ideaInput.addEventListener('input', function() {
@@ -437,6 +504,74 @@
             return descriptions[grade];
         }
 
+        function generateSuggestions(criteriaResults, grade) {
+            const suggestions = [];
+            
+            criteriaResults.forEach(criterion => {
+                if (!criterion.met) {
+                    if (criterion.name === "Leverages Shop's Catalog") {
+                        suggestions.push({
+                            icon: "🛍️",
+                            title: "Strengthen Catalog Integration",
+                            description: "Your Mini needs to work across Shop's expansive product catalog and leverage product metadata.",
+                            examples: [
+                                "Browse multiple product categories and brands",
+                                "Use product metadata like colors, sizes, materials, reviews",
+                                "Integrate with Shop's search and filtering capabilities",
+                                "Consider cross-category product recommendations"
+                            ]
+                        });
+                    }
+                    
+                    if (criterion.name === "Provides Personalization") {
+                        suggestions.push({
+                            icon: "👤",
+                            title: "Add Personalization Features",
+                            description: "Leverage user identity data, preferences, and purchase history to create tailored experiences.",
+                            examples: [
+                                "Use purchase history to suggest relevant products",
+                                "Learn from user favorites and saved items",
+                                "Personalize based on size, style, or brand preferences",
+                                "Adapt recommendations based on user behavior patterns"
+                            ]
+                        });
+                    }
+                    
+                    if (criterion.name === "Creates Habits") {
+                        suggestions.push({
+                            icon: "🔄",
+                            title: "Build Retention & Engagement",
+                            description: "Add features that give users reasons to return daily and create social engagement loops.",
+                            examples: [
+                                "Daily challenges or fresh content",
+                                "Social sharing and friend interactions",
+                                "Streaks, achievements, or progress tracking",
+                                "Push notifications for relevant updates",
+                                "Community features like voting or commenting"
+                            ]
+                        });
+                    }
+                }
+            });
+            
+            // Add general suggestions based on grade
+            if (grade === 'C' || grade === 'D' || grade === 'F') {
+                suggestions.push({
+                    icon: "✨",
+                    title: "Consider These Shop-Specific Enhancements",
+                    description: "Think about what makes your Mini unique to Shop versus a generic mobile app.",
+                    examples: [
+                        "AI-powered product recommendations",
+                        "Integration with Shop Pay for seamless checkout",
+                        "Leverage Shop's social features and user network",
+                        "Use Shop's rich product data (reviews, ratings, availability)"
+                    ]
+                });
+            }
+            
+            return suggestions;
+        }
+
         gradeBtn.addEventListener('click', function() {
             const ideaText = ideaInput.value.trim();
             
@@ -478,6 +613,28 @@
                         </div>
                     </div>
                 `).join('');
+                
+                // Generate and display suggestions
+                const suggestions = generateSuggestions(analysis, grade);
+                if (suggestions.length > 0) {
+                    suggestionsResults.innerHTML = suggestions.map(suggestion => `
+                        <div class="suggestion">
+                            <div class="suggestion-content">
+                                <h4><span class="suggestion-icon">${suggestion.icon}</span>${suggestion.title}</h4>
+                                <p>${suggestion.description}</p>
+                                <div class="suggestion-examples">
+                                    <strong>Ideas to try:</strong>
+                                    <ul>
+                                        ${suggestion.examples.map(example => `<li>${example}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    suggestionsSection.style.display = 'block';
+                } else {
+                    suggestionsSection.style.display = 'none';
+                }
                 
                 // Show results
                 results.style.display = 'block';
