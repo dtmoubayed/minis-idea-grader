@@ -507,8 +507,184 @@
             return descriptions[grade];
         }
 
-        function generateSuggestions(criteriaResults, grade) {
+        function detectMiniTheme(ideaText) {
+            const lowerText = ideaText.toLowerCase();
+            
+            // Fashion & Style themes
+            if (lowerText.match(/fashion|style|outfit|clothing|clothes|wear|dress|shirt|pants|shoes|accessories|jewelry|bags/)) {
+                return 'fashion';
+            }
+            
+            // Home & Decor themes  
+            if (lowerText.match(/home|room|furniture|decor|interior|design|house|apartment|living|bedroom|kitchen|ar|augmented reality/)) {
+                return 'home';
+            }
+            
+            // Beauty & Wellness themes
+            if (lowerText.match(/beauty|makeup|skincare|wellness|health|fitness|exercise|workout|beauty/)) {
+                return 'beauty';
+            }
+            
+            // Food & Cooking themes
+            if (lowerText.match(/food|cooking|recipe|kitchen|meal|restaurant|dining|cook|eat/)) {
+                return 'food';
+            }
+            
+            // Gaming & Entertainment themes
+            if (lowerText.match(/game|gaming|play|entertainment|fun|challenge|competition/)) {
+                return 'gaming';
+            }
+            
+            // Shopping & Discovery themes
+            if (lowerText.match(/shop|shopping|buy|purchase|discover|browse|find|search|recommendation/)) {
+                return 'shopping';
+            }
+            
+            return 'general';
+        }
+
+        function getContextualExamples(criterion, theme) {
+            const examples = {
+                catalog: {
+                    fashion: [
+                        "Browse clothing across all brands and styles",
+                        "Filter by size, color, material, and price range", 
+                        "Mix and match items from different fashion categories",
+                        "Use trend data and seasonal product collections"
+                    ],
+                    home: [
+                        "Access furniture from multiple home brands",
+                        "Use room dimensions and style preferences to filter",
+                        "Combine products across furniture categories",
+                        "Leverage 3D models and AR product previews"
+                    ],
+                    beauty: [
+                        "Browse skincare and makeup across all beauty brands",
+                        "Filter by skin type, concerns, and ingredient preferences",
+                        "Cross-reference products with user reviews and ratings",
+                        "Use beauty trend data and seasonal collections"
+                    ],
+                                         food: [
+                        "Access kitchen tools and ingredients from multiple brands",
+                        "Filter by dietary restrictions and cooking style",
+                        "Combine products for complete meal solutions",
+                        "Use recipe data and cooking equipment metadata"
+                    ],
+                    gaming: [
+                        "Browse gaming gear, accessories, and tech products",
+                        "Filter by gaming platform, skill level, and budget",
+                        "Combine products for complete gaming setups",
+                        "Use performance specs and gamer review data"
+                    ],
+                    shopping: [
+                        "Access products across all categories and price ranges",
+                        "Use advanced filtering and discovery algorithms",
+                        "Cross-reference trending and popular items",
+                        "Leverage social proof and recommendation engines"
+                    ],
+                    general: [
+                        "Browse multiple product categories and brands",
+                        "Use product metadata like colors, sizes, materials, reviews",
+                        "Integrate with Shop's search and filtering capabilities",
+                        "Consider cross-category product recommendations"
+                    ]
+                },
+                personalization: {
+                    fashion: [
+                        "Learn from outfit likes and style preferences",
+                        "Use body measurements and fit feedback",
+                        "Track seasonal style evolution and favorite brands",
+                        "Personalize based on occasion and lifestyle needs"
+                    ],
+                    home: [
+                        "Remember room dimensions and style preferences",
+                        "Learn from saved room designs and furniture likes",
+                        "Track home improvement goals and budget",
+                        "Personalize based on living situation and family size"
+                    ],
+                    beauty: [
+                        "Track skin changes and product effectiveness",
+                        "Learn from beauty routine preferences and timing",
+                        "Use skin tone and beauty goals for recommendations",
+                        "Personalize based on age, climate, and lifestyle"
+                    ],
+                                         food: [
+                        "Learn from cooking frequency and skill level",
+                        "Use dietary restrictions and favorite cuisines",
+                        "Track kitchen equipment and ingredient preferences",
+                        "Personalize based on family size and meal planning habits"
+                    ],
+                    gaming: [
+                        "Track gaming preferences and skill progression",
+                        "Learn from favorite games and gaming sessions",
+                        "Personalize based on gaming setup and budget",
+                        "Adapt recommendations based on play style and achievements"
+                    ],
+                    shopping: [
+                        "Learn from browsing patterns and purchase timing",
+                        "Track deal preferences and price sensitivity",
+                        "Personalize based on shopping goals and occasions",
+                        "Adapt recommendations based on discovery behavior"
+                    ],
+                    general: [
+                        "Use purchase history to suggest relevant products",
+                        "Learn from user favorites and saved items",
+                        "Personalize based on size, style, or brand preferences",
+                        "Adapt recommendations based on user behavior patterns"
+                    ]
+                },
+                habits: {
+                    fashion: [
+                        "Daily outfit inspiration and styling challenges",
+                        "Weekly wardrobe planning and coordination",
+                        "Share daily outfits for style feedback and likes",
+                        "Seasonal style goals and fashion streak tracking"
+                    ],
+                    home: [
+                        "Daily room refresh ideas and decoration tips",
+                        "Weekly home improvement challenges",
+                        "Share room makeovers and design progress",
+                        "Seasonal decorating goals and space transformation streaks"
+                    ],
+                    beauty: [
+                        "Daily skincare routine reminders and tips",
+                        "Weekly beauty challenges and product trials",
+                        "Share beauty looks and routine progress",
+                        "Track skin improvement goals and routine streaks"
+                    ],
+                                         food: [
+                        "Daily recipe suggestions and cooking challenges",
+                        "Weekly meal planning and kitchen organization",
+                        "Share cooking creations and culinary experiments",
+                        "Track cooking skill goals and recipe mastery streaks"
+                    ],
+                    gaming: [
+                        "Daily gaming challenges and achievement hunts",
+                        "Weekly leaderboards and competitive events",
+                        "Share gaming highlights and setup showcases",
+                        "Track skill improvement goals and gaming streaks"
+                    ],
+                    shopping: [
+                        "Daily deal alerts and product discoveries",
+                        "Weekly wishlist reviews and price tracking",
+                        "Share favorite finds and product recommendations",
+                        "Track savings goals and discovery streaks"
+                    ],
+                    general: [
+                        "Daily challenges or fresh content",
+                        "Social sharing and friend interactions",
+                        "Streaks, achievements, or progress tracking",
+                        "Push notifications for relevant updates"
+                    ]
+                }
+            };
+            
+            return examples[criterion][theme] || examples[criterion]['general'];
+        }
+
+        function generateSuggestions(criteriaResults, grade, ideaText) {
             const suggestions = [];
+            const theme = detectMiniTheme(ideaText);
             
             criteriaResults.forEach(criterion => {
                 if (!criterion.met) {
@@ -517,12 +693,7 @@
                             icon: "🛍️",
                             title: "Strengthen Catalog Integration",
                             description: "Your Mini needs to work across Shop's expansive product catalog and leverage product metadata.",
-                            examples: [
-                                "Browse multiple product categories and brands",
-                                "Use product metadata like colors, sizes, materials, reviews",
-                                "Integrate with Shop's search and filtering capabilities",
-                                "Consider cross-category product recommendations"
-                            ]
+                            examples: getContextualExamples('catalog', theme)
                         });
                     }
                     
@@ -531,12 +702,7 @@
                             icon: "👤",
                             title: "Add Personalization Features",
                             description: "Leverage user identity data, preferences, and purchase history to create tailored experiences.",
-                            examples: [
-                                "Use purchase history to suggest relevant products",
-                                "Learn from user favorites and saved items",
-                                "Personalize based on size, style, or brand preferences",
-                                "Adapt recommendations based on user behavior patterns"
-                            ]
+                            examples: getContextualExamples('personalization', theme)
                         });
                     }
                     
@@ -545,13 +711,7 @@
                             icon: "🔄",
                             title: "Build Retention & Engagement",
                             description: "Add features that give users reasons to return daily and create social engagement loops.",
-                            examples: [
-                                "Daily challenges or fresh content",
-                                "Social sharing and friend interactions",
-                                "Streaks, achievements, or progress tracking",
-                                "Push notifications for relevant updates",
-                                "Community features like voting or commenting"
-                            ]
+                            examples: getContextualExamples('habits', theme)
                         });
                     }
                 }
@@ -618,7 +778,7 @@
                 `).join('');
                 
                 // Generate and display suggestions
-                const suggestions = generateSuggestions(analysis, grade);
+                const suggestions = generateSuggestions(analysis, grade, ideaText);
                 if (suggestions.length > 0) {
                     suggestionsResults.innerHTML = suggestions.map(suggestion => `
                         <div class="suggestion">
