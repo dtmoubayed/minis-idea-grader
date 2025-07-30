@@ -138,6 +138,64 @@
             margin-bottom: 10px;
         }
 
+        .matrix-insights-section {
+            margin-top: 30px;
+        }
+
+        .matrix-insights-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .matrix-insight {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .matrix-insight.positive {
+            background: #f0fff4;
+            border-left-color: #48bb78;
+        }
+
+        .matrix-insight.negative {
+            background: #fff5f5;
+            border-left-color: #f56565;
+        }
+
+        .matrix-insight.neutral {
+            background: #f7fafc;
+            border-left-color: #4a5568;
+        }
+
+        .matrix-insight-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .matrix-insight.positive .matrix-insight-icon {
+            color: #48bb78;
+        }
+
+        .matrix-insight.negative .matrix-insight-icon {
+            color: #f56565;
+        }
+
+        .matrix-insight.neutral .matrix-insight-icon {
+            color: #4a5568;
+        }
+
+        .matrix-insight-content p {
+            color: #4a5568;
+            line-height: 1.5;
+            margin: 0;
+        }
+
         .criteria-section {
             margin-top: 30px;
         }
@@ -344,6 +402,11 @@
                     <div id="gradeDescription" class="grade-description"></div>
                 </div>
                 
+                <div class="matrix-insights-section" id="matrixInsightsSection" style="display: none;">
+                    <h3>🎯 Pattern Analysis</h3>
+                    <div id="matrixInsightsResults"></div>
+                </div>
+                
                 <div class="criteria-section">
                     <h3>📋 Criteria Analysis</h3>
                     <div id="criteriaResults"></div>
@@ -383,6 +446,8 @@
         const gradeLetter = document.getElementById('gradeLetter');
         const gradeDescription = document.getElementById('gradeDescription');
         const criteriaResults = document.getElementById('criteriaResults');
+        const matrixInsightsSection = document.getElementById('matrixInsightsSection');
+        const matrixInsightsResults = document.getElementById('matrixInsightsResults');
         const suggestionsSection = document.getElementById('suggestionsSection');
         const suggestionsResults = document.getElementById('suggestionsResults');
 
@@ -436,9 +501,89 @@
             }
         ];
 
+        // Mini idea quality patterns based on Shop's internal matrix
+        const miniPatterns = {
+            strongConcepts: [
+                // Strong Fashion/Style concepts
+                'daily fits', 'style dna', 'fashion fortune', 'style voting', 'outfit polls', 'style streaks',
+                // Strong AI-powered concepts  
+                'ai shopping assistant', 'ai recommendations', 'ai styling', 'ai trend prediction', 'ai gift finder',
+                // Strong Social Voting concepts
+                'this or that', 'voting helper', 'brand voting', 'trend voting', 'gift voting',
+                // Strong Discovery concepts
+                'trend spotter', 'brand discovery', 'friend recommendations', 'trend discovery',
+                // Strong Gamified concepts
+                'the claw', 'social scavenger hunt', 'shopping trivia', 'gift guessing games',
+                // Strong UGC Creation concepts
+                'styled on shop', 'shop & tell', 'postcard.shop', 'gift unboxing', 'unboxing videos',
+                // Strong Rewards concepts
+                'sale radar', 'cost per wear', 'early adopter rewards', 'gift rewards', 'brand rewards'
+            ],
+            weakConcepts: [
+                // Weak Daily Habit concepts
+                'daily product drop', 'daily shop cash', 'daily gift ideas', 'merchant spotlight',
+                // Weak Social concepts
+                'shop with friends', 'social shopping rewards',
+                // Weak Content concepts  
+                'trend trivia', 'brand trivia', 'trend content creation', 'merchant ugc'
+            ],
+            strongCategories: [
+                'fashion', 'style', 'ai powered', 'social voting', 'discovery', 'gamified', 'personalized recommendations'
+            ],
+            weakCategories: [
+                'daily drops', 'generic social', 'simple trivia', 'merchant promotion', 'cash rewards'
+            ]
+        };
+
+        function evaluateAgainstMatrix(text) {
+            const lowerText = text.toLowerCase();
+            let matrixScore = 0;
+            let matrixReasons = [];
+            
+            // Check for strong concept patterns (+3 points each)
+            miniPatterns.strongConcepts.forEach(concept => {
+                if (lowerText.includes(concept)) {
+                    matrixScore += 3;
+                    matrixReasons.push(`✅ Matches strong concept: "${concept}"`);
+                }
+            });
+            
+            // Check for weak concept patterns (-3 points each)
+            miniPatterns.weakConcepts.forEach(concept => {
+                if (lowerText.includes(concept)) {
+                    matrixScore -= 3;
+                    matrixReasons.push(`⚠️ Matches weak concept: "${concept}"`);
+                }
+            });
+            
+            // Check for strong category patterns (+2 points each)
+            miniPatterns.strongCategories.forEach(category => {
+                if (lowerText.includes(category)) {
+                    matrixScore += 2;
+                    matrixReasons.push(`✓ Strong category: "${category}"`);
+                }
+            });
+            
+            // Check for weak category patterns (-2 points each)
+            miniPatterns.weakCategories.forEach(category => {
+                if (lowerText.includes(category)) {
+                    matrixScore -= 2;
+                    matrixReasons.push(`⚠️ Weak category: "${category}"`);
+                }
+            });
+            
+            return {
+                score: matrixScore,
+                reasons: matrixReasons.slice(0, 3) // Limit to top 3 reasons
+            };
+        }
+
         function analyzeIdea(text) {
             const lowerText = text.toLowerCase();
             const results = [];
+            
+            // Evaluate against matrix patterns first
+            const matrixEvaluation = evaluateAgainstMatrix(text);
             
             criteria.forEach(criterion => {
                 let score = 0;
@@ -474,6 +619,15 @@
                     }
                 });
                 
+                // Add matrix-based scoring bonus/penalty
+                const matrixBonus = Math.floor(matrixEvaluation.score / 3); // Distribute matrix score across criteria
+                score += matrixBonus;
+                
+                // Add matrix reasons to criterion reasons
+                if (matrixEvaluation.reasons.length > 0) {
+                    reasons = [...reasons, ...matrixEvaluation.reasons];
+                }
+                
                 results.push({
                     ...criterion,
                     score: score,
@@ -482,27 +636,45 @@
                 });
             });
             
+            // Add matrix evaluation as additional context
+            results.matrixEvaluation = matrixEvaluation;
+            
             return results;
         }
 
         function calculateGrade(criteriaResults) {
             const metCount = criteriaResults.filter(c => c.met).length;
             const totalScore = criteriaResults.reduce((sum, c) => sum + Math.max(0, c.score), 0);
+            const matrixScore = criteriaResults.matrixEvaluation ? criteriaResults.matrixEvaluation.score : 0;
             
-            if (metCount === 3 && totalScore >= 15) return 'A';
-            if (metCount === 3 || (metCount === 2 && totalScore >= 12)) return 'B';
-            if (metCount === 2 || (metCount === 1 && totalScore >= 8)) return 'C';
-            if (metCount === 1 || totalScore >= 4) return 'D';
+            // Matrix score heavily influences grade
+            const adjustedScore = totalScore + matrixScore;
+            
+            // Strong matrix concepts can boost grade significantly
+            if (matrixScore >= 6 && metCount >= 2 && adjustedScore >= 18) return 'A';
+            if (matrixScore >= 3 && metCount >= 2 && adjustedScore >= 15) return 'A';
+            if (metCount === 3 && adjustedScore >= 15) return 'A';
+            
+            if (matrixScore >= 3 && metCount >= 2) return 'B';
+            if (metCount === 3 || (metCount === 2 && adjustedScore >= 12)) return 'B';
+            
+            if (metCount === 2 || (metCount === 1 && adjustedScore >= 8)) return 'C';
+            
+            // Weak matrix concepts can drag down grade
+            if (matrixScore <= -6) return 'F';
+            if (matrixScore <= -3 && adjustedScore < 6) return 'D';
+            
+            if (metCount === 1 || adjustedScore >= 4) return 'D';
             return 'F';
         }
 
-        function getGradeDescription(grade) {
+        function getGradeDescription(grade, matrixScore) {
             const descriptions = {
-                'A': 'Excellent! Your Mini idea strongly meets all three criteria and has great potential.',
-                'B': 'Great idea! Meets most criteria with room for minor improvements.',
-                'C': 'Good foundation! Consider strengthening the weaker areas.',
-                'D': 'Has potential but needs significant improvements in key areas.',
-                'F': 'Needs major rework to align with Shop\'s Mini criteria.'
+                'A': matrixScore >= 6 ? 'Outstanding! Your Mini aligns perfectly with proven successful patterns and meets all key criteria.' : 'Excellent! Your Mini idea strongly meets all three criteria and has great potential.',
+                'B': matrixScore >= 3 ? 'Strong concept! Your idea follows successful Mini patterns with room for minor improvements.' : 'Great idea! Meets most criteria with room for minor improvements.',
+                'C': 'Good foundation! Consider strengthening the weaker areas and aligning with more successful Mini patterns.',
+                'D': matrixScore <= -3 ? 'Challenging concept. Your idea may follow patterns that haven\'t worked well for other Minis.' : 'Has potential but needs significant improvements in key areas.',
+                'F': matrixScore <= -6 ? 'This concept closely matches patterns known to be unsuccessful for Shop Minis.' : 'Needs major rework to align with Shop\'s Mini criteria.'
             };
             return descriptions[grade];
         }
@@ -759,7 +931,34 @@
                 // Display grade
                 gradeLetter.textContent = grade;
                 gradeLetter.className = `grade-letter grade-${grade}`;
-                gradeDescription.textContent = getGradeDescription(grade);
+                const matrixScore = analysis.matrixEvaluation ? analysis.matrixEvaluation.score : 0;
+                gradeDescription.textContent = getGradeDescription(grade, matrixScore);
+                
+                // Display matrix insights
+                if (analysis.matrixEvaluation && analysis.matrixEvaluation.reasons.length > 0) {
+                    const matrixInsightType = matrixScore > 0 ? 'positive' : (matrixScore < 0 ? 'negative' : 'neutral');
+                    const matrixIcon = matrixScore > 0 ? '🎯' : (matrixScore < 0 ? '⚠️' : '📊');
+                    const matrixMessage = matrixScore > 0 ? 
+                        `Your idea aligns with successful Mini patterns (Score: +${matrixScore})` :
+                        matrixScore < 0 ? 
+                        `Your idea matches some patterns that haven't worked well for other Minis (Score: ${matrixScore})` :
+                        'Your idea follows neutral patterns';
+                    
+                    matrixInsightsResults.innerHTML = `
+                        <div class="matrix-insight ${matrixInsightType}">
+                            <div class="matrix-insight-icon">${matrixIcon}</div>
+                            <div class="matrix-insight-content">
+                                <p><strong>${matrixMessage}</strong></p>
+                                <div style="margin-top: 8px; font-size: 0.9rem;">
+                                    ${analysis.matrixEvaluation.reasons.map(reason => `<div>${reason}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    matrixInsightsSection.style.display = 'block';
+                } else {
+                    matrixInsightsSection.style.display = 'none';
+                }
                 
                 // Display criteria analysis
                 criteriaResults.innerHTML = analysis.map(criterion => `
