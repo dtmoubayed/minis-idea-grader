@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Idea Grader - Shop App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .idea-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .idea-input:focus {
+            outline: none;
+            border-color: #5a67d8;
+            box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(90, 103, 216, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 30px;
+            background: #f7fafc;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .grade-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .grade-letter {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: inline-block;
+            padding: 20px 30px;
+            border-radius: 15px;
+            color: white;
+        }
+
+        .grade-A { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+        .grade-B { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); }
+        .grade-C { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); }
+        .grade-D { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); }
+        .grade-F { background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); }
+
+        .grade-description {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .criteria-section {
+            margin-top: 30px;
+        }
+
+        .criteria-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .criterion {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .criterion.met {
+            background: #f0fff4;
+            border-left-color: #48bb78;
+        }
+
+        .criterion.not-met {
+            background: #fff5f5;
+            border-left-color: #f56565;
+        }
+
+        .criterion-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .criterion.met .criterion-icon {
+            color: #48bb78;
+        }
+
+        .criterion.not-met .criterion-icon {
+            color: #f56565;
+        }
+
+        .criterion-content h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+
+        .criterion-content p {
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .examples {
+            margin-top: 40px;
+            padding: 30px;
+            background: #edf2f7;
+            border-radius: 15px;
+        }
+
+        .examples h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .example-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .example-card h4 {
+            color: #5a67d8;
+            margin-bottom: 10px;
+        }
+
+        .example-card p {
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .grade-letter {
+                font-size: 3rem;
+                padding: 15px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Mini Idea Grader</h1>
+            <p>Get your Shop App Mini idea evaluated against the official criteria</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="ideaText">Describe your Mini idea:</label>
+                <textarea 
+                    id="ideaText" 
+                    class="idea-input" 
+                    placeholder="My idea for a Mini is... (e.g., 'An AR try-on experience where users can see how furniture looks in their space, save favorites, and share their decorated rooms with friends for feedback')"
+                    maxlength="1000"
+                ></textarea>
+                <div style="text-align: right; color: #718096; font-size: 0.9rem; margin-top: 5px;">
+                    <span id="charCount">0</span>/1000 characters
+                </div>
+            </div>
+            
+            <button id="gradeBtn" class="submit-btn">Grade My Mini Idea</button>
+            
+            <div id="results" class="results">
+                <div class="grade-display">
+                    <div id="gradeLetter" class="grade-letter"></div>
+                    <div id="gradeDescription" class="grade-description"></div>
+                </div>
+                
+                <div class="criteria-section">
+                    <h3>📋 Criteria Analysis</h3>
+                    <div id="criteriaResults"></div>
+                </div>
+            </div>
+            
+            <div class="examples">
+                <h3>💡 Great Mini Examples</h3>
+                <div class="example-grid">
+                    <div class="example-card">
+                        <h4>AR Shuffle</h4>
+                        <p>Uses AR products, leverages favorites, but needs stronger retention and social loops.</p>
+                    </div>
+                    <div class="example-card">
+                        <h4>Color Seasons</h4>
+                        <p>Personal color analysis using photos, with catalog recommendations and social sharing potential.</p>
+                    </div>
+                    <div class="example-card">
+                        <h4>Dream Boxes</h4>
+                        <p>Social mood boards with full catalog integration, publishing, and engagement through likes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ideaInput = document.getElementById('ideaText');
+        const charCount = document.getElementById('charCount');
+        const gradeBtn = document.getElementById('gradeBtn');
+        const results = document.getElementById('results');
+        const gradeLetter = document.getElementById('gradeLetter');
+        const gradeDescription = document.getElementById('gradeDescription');
+        const criteriaResults = document.getElementById('criteriaResults');
+
+        // Character counter
+        ideaInput.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+            
+            if (count > 950) {
+                charCount.style.color = '#f56565';
+            } else {
+                charCount.style.color = '#718096';
+            }
+        });
+
+        // Criteria definitions and keywords
+        const criteria = [
+            {
+                name: "Leverages Shop's Catalog",
+                description: "Works across Shop's expansive catalog of products and merchants, uses product metadata effectively",
+                keywords: {
+                    strong: ['catalog', 'products', 'merchandise', 'brands', 'variants', 'inventory', 'shopping', 'browse', 'search products', 'product data', 'metadata'],
+                    medium: ['shop', 'buy', 'purchase', 'items', 'goods', 'store', 'marketplace', 'commerce'],
+                    weak: ['stuff', 'things', 'objects']
+                },
+                antiPatterns: ['single product', 'one item', 'specific brand only']
+            },
+            {
+                name: "Provides Personalization",
+                description: "Leverages user identity data, preferences, purchase history, and demographics for a personalized experience",
+                keywords: {
+                    strong: ['personalized', 'personalization', 'preferences', 'favorites', 'profile', 'user data', 'purchase history', 'recommendations', 'tailored', 'customized', 'for you', 'based on you'],
+                    medium: ['personal', 'individual', 'custom', 'my', 'save', 'follow', 'like', 'match', 'fit'],
+                    weak: ['user', 'account']
+                },
+                antiPatterns: ['same for everyone', 'generic', 'one size fits all']
+            },
+            {
+                name: "Creates Habits",
+                description: "Gives users reasons to return daily, includes social features, engagement loops, and recurring value",
+                keywords: {
+                    strong: ['daily', 'habit', 'routine', 'social', 'share', 'friends', 'community', 'likes', 'comments', 'feed', 'follow', 'streak', 'challenge', 'leaderboard', 'notification'],
+                    medium: ['regular', 'often', 'frequently', 'engage', 'return', 'back', 'again', 'repeat', 'ongoing'],
+                    weak: ['use', 'visit', 'check']
+                },
+                antiPatterns: ['one time', 'single use', 'once', 'temporary']
+            }
+        ];
+
+        function analyzeIdea(text) {
+            const lowerText = text.toLowerCase();
+            const results = [];
+            
+            criteria.forEach(criterion => {
+                let score = 0;
+                let reasons = [];
+                
+                // Check for anti-patterns first (negative scoring)
+                criterion.antiPatterns.forEach(pattern => {
+                    if (lowerText.includes(pattern.toLowerCase())) {
+                        score -= 2;
+                        reasons.push(`⚠️ Contains limiting pattern: "${pattern}"`);
+                    }
+                });
+                
+                // Check for keywords (positive scoring)
+                criterion.keywords.strong.forEach(keyword => {
+                    if (lowerText.includes(keyword.toLowerCase())) {
+                        score += 3;
+                        reasons.push(`✅ Strong indicator: "${keyword}"`);
+                    }
+                });
+                
+                criterion.keywords.medium.forEach(keyword => {
+                    if (lowerText.includes(keyword.toLowerCase())) {
+                        score += 2;
+                        reasons.push(`✓ Medium indicator: "${keyword}"`);
+                    }
+                });
+                
+                criterion.keywords.weak.forEach(keyword => {
+                    if (lowerText.includes(keyword.toLowerCase())) {
+                        score += 1;
+                        reasons.push(`· Weak indicator: "${keyword}"`);
+                    }
+                });
+                
+                results.push({
+                    ...criterion,
+                    score: score,
+                    met: score >= 3, // Threshold for meeting criteria
+                    reasons: reasons.slice(0, 3) // Limit to top 3 reasons
+                });
+            });
+            
+            return results;
+        }
+
+        function calculateGrade(criteriaResults) {
+            const metCount = criteriaResults.filter(c => c.met).length;
+            const totalScore = criteriaResults.reduce((sum, c) => sum + Math.max(0, c.score), 0);
+            
+            if (metCount === 3 && totalScore >= 15) return 'A';
+            if (metCount === 3 || (metCount === 2 && totalScore >= 12)) return 'B';
+            if (metCount === 2 || (metCount === 1 && totalScore >= 8)) return 'C';
+            if (metCount === 1 || totalScore >= 4) return 'D';
+            return 'F';
+        }
+
+        function getGradeDescription(grade) {
+            const descriptions = {
+                'A': 'Excellent! Your Mini idea strongly meets all three criteria and has great potential.',
+                'B': 'Great idea! Meets most criteria with room for minor improvements.',
+                'C': 'Good foundation! Consider strengthening the weaker areas.',
+                'D': 'Has potential but needs significant improvements in key areas.',
+                'F': 'Needs major rework to align with Shop\'s Mini criteria.'
+            };
+            return descriptions[grade];
+        }
+
+        gradeBtn.addEventListener('click', function() {
+            const ideaText = ideaInput.value.trim();
+            
+            if (!ideaText) {
+                alert('Please enter your Mini idea first!');
+                return;
+            }
+            
+            if (ideaText.length < 20) {
+                alert('Please provide more details about your Mini idea (at least 20 characters).');
+                return;
+            }
+            
+            // Disable button and show loading
+            gradeBtn.disabled = true;
+            gradeBtn.textContent = 'Analyzing...';
+            
+            setTimeout(() => {
+                const analysis = analyzeIdea(ideaText);
+                const grade = calculateGrade(analysis);
+                
+                // Display grade
+                gradeLetter.textContent = grade;
+                gradeLetter.className = `grade-letter grade-${grade}`;
+                gradeDescription.textContent = getGradeDescription(grade);
+                
+                // Display criteria analysis
+                criteriaResults.innerHTML = analysis.map(criterion => `
+                    <div class="criterion ${criterion.met ? 'met' : 'not-met'}">
+                        <div class="criterion-icon">${criterion.met ? '✅' : '❌'}</div>
+                        <div class="criterion-content">
+                            <h4>${criterion.name}</h4>
+                            <p>${criterion.description}</p>
+                            ${criterion.reasons.length > 0 ? `
+                                <div style="margin-top: 10px; font-size: 0.9rem;">
+                                    ${criterion.reasons.map(reason => `<div>${reason}</div>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Show results
+                results.style.display = 'block';
+                results.scrollIntoView({ behavior: 'smooth' });
+                
+                // Reset button
+                gradeBtn.disabled = false;
+                gradeBtn.textContent = 'Grade My Mini Idea';
+            }, 1000);
+        });
+
+        // Allow Enter key to submit (with Shift+Enter for new line)
+        ideaInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                gradeBtn.click();
+            }
+        });
+    </script>
+</body>
+</html> 
